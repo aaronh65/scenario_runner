@@ -409,24 +409,27 @@ class CollisionTest(Criterion):
         else:
             return
 
+        self.collision_time = GameTime.get_time()
         collision_event = TrafficEvent(event_type=actor_type)
         collision_event.set_dict({
+            'time': self.collision_time,
             'type': event.other_actor.type_id,
             'id': event.other_actor.id,
             'x': actor_location.x,
             'y': actor_location.y,
             'z': actor_location.z})
         collision_event.set_message(
-            "Agent collided against object with type={} and id={} at (x={}, y={}, z={})".format(
+            "Agent collided against object with type={} and id={} at (x={}, y={}, z={}) at t={}".format(
                 event.other_actor.type_id,
                 event.other_actor.id,
                 round(actor_location.x, 3),
                 round(actor_location.y, 3),
-                round(actor_location.z, 3)))
+                round(actor_location.z, 3),
+                f'{self.collision_time:.2f}'))
 
         self.test_status = "FAILURE"
         self.actual_value += 1
-        self.collision_time = GameTime.get_time()
+        #self.collision_time = GameTime.get_time()
 
         self.registered_collisions.append(actor_location)
         self.list_traffic_events.append(collision_event)
@@ -1563,12 +1566,15 @@ class InRouteTest(Criterion):
                 _ = blackv.set("InRoute", False)
 
                 route_deviation_event = TrafficEvent(event_type=TrafficEventType.ROUTE_DEVIATION)
+                deviation_time = GameTime.get_time()
                 route_deviation_event.set_message(
-                    "Agent deviated from the route at (x={}, y={}, z={})".format(
+                        "Agent deviated from the route at (x={}, y={}, z={}) at t={}".format(
                         round(location.x, 3),
                         round(location.y, 3),
-                        round(location.z, 3)))
+                        round(location.z, 3),
+                        f'{deviation_time:.2f}'))
                 route_deviation_event.set_dict({
+                    'time': deviation_time,
                     'x': location.x,
                     'y': location.y,
                     'z': location.z})
@@ -1627,6 +1633,7 @@ class RouteCompletionTest(Criterion):
         self._traffic_event = TrafficEvent(event_type=TrafficEventType.ROUTE_COMPLETION)
         self.list_traffic_events.append(self._traffic_event)
         self._percentage_route_completed = 0.0
+        self._percentage_route_completed_list = [0.0]
 
     def update(self):
         """
@@ -1656,8 +1663,11 @@ class RouteCompletionTest(Criterion):
                     self._current_index = index
                     self._percentage_route_completed = 100.0 * float(self._accum_meters[self._current_index]) \
                         / float(self._accum_meters[-1])
+
+                    self._percentage_route_completed_list.append(self._percentage_route_completed)
                     self._traffic_event.set_dict({
-                        'route_completed': self._percentage_route_completed})
+                        'route_completed': self._percentage_route_completed,
+                        'route_completed_list': self._percentage_route_completed_list})
                     self._traffic_event.set_message(
                         "Agent has completed > {:.2f}% of the route".format(
                             self._percentage_route_completed))
@@ -1668,7 +1678,7 @@ class RouteCompletionTest(Criterion):
                 self.list_traffic_events.append(route_completion_event)
                 self.test_status = "SUCCESS"
                 self._percentage_route_completed = 100
-
+                self._percentage_route_completed_list.append(self._percentage_route_completed)
         elif self.test_status == "SUCCESS":
             new_status = py_trees.common.Status.SUCCESS
 
@@ -1803,13 +1813,16 @@ class RunningRedLightTest(Criterion):
                         self.actual_value += 1
                         location = traffic_light.get_transform().location
                         red_light_event = TrafficEvent(event_type=TrafficEventType.TRAFFIC_LIGHT_INFRACTION)
+                        infraction_time = GameTime.get_time()
                         red_light_event.set_message(
-                            "Agent ran a red light {} at (x={}, y={}, z={})".format(
+                                "Agent ran a red light {} at (x={}, y={}, z={}) at t={}".format(
                                 traffic_light.id,
                                 round(location.x, 3),
                                 round(location.y, 3),
-                                round(location.z, 3)))
+                                round(location.z, 3),
+                                f'{infraction_time:.2f}'))
                         red_light_event.set_dict({
+                            'time': infraction_time,
                             'id': traffic_light.id,
                             'x': location.x,
                             'y': location.y,
@@ -2021,13 +2034,16 @@ class RunningStopTest(Criterion):
                     self.test_status = "FAILURE"
                     stop_location = self._target_stop_sign.get_transform().location
                     running_stop_event = TrafficEvent(event_type=TrafficEventType.STOP_INFRACTION)
+                    infraction_time = GameTime.get_time()
                     running_stop_event.set_message(
-                        "Agent ran a stop with id={} at (x={}, y={}, z={})".format(
+                        "Agent ran a stop with id={} at (x={}, y={}, z={}) at t={}".format(
                             self._target_stop_sign.id,
                             round(stop_location.x, 3),
                             round(stop_location.y, 3),
-                            round(stop_location.z, 3)))
+                            round(stop_location.z, 3),
+                            f'{infraction_time:.2f}'))
                     running_stop_event.set_dict({
+                        'time': infraction_time,
                         'id': self._target_stop_sign.id,
                         'x': stop_location.x,
                         'y': stop_location.y,
