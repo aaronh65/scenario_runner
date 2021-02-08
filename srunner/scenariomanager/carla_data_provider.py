@@ -380,7 +380,7 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
                     relevant_traffic_light = traffic_light
                     distance_to_relevant_traffic_light = distance
 
-        return relevant_traffic_light
+        return relevant_traffic_light, len(list_of_waypoints) * 2.0
 
     @staticmethod
     def set_ego_vehicle_route(route):
