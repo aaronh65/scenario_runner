@@ -433,6 +433,7 @@ class CollisionTest(Criterion):
 
         self.registered_collisions.append(actor_location)
         self.list_traffic_events.append(collision_event)
+        CarlaDataProvider.get_infraction_list().append(collision_event)
 
         # Number 0: static objects -> ignore it
         if event.other_actor.id != 0:
@@ -482,6 +483,7 @@ class ActorSpeedAboveThresholdTest(Criterion):
                     ActorSpeedAboveThresholdTest._set_event_message(blocked_event, vehicle_location)
                     ActorSpeedAboveThresholdTest._set_event_dict(blocked_event, vehicle_location)
                     self.list_traffic_events.append(blocked_event)
+                    CarlaDataProvider.get_infraction_list().append(blocked_event)
             else:
                 self._time_last_valid_state = GameTime.get_time()
 
@@ -955,6 +957,7 @@ class OnSidewalkTest(Criterion):
             self._onsidewalk_active = False
             self._wrong_sidewalk_distance = 0
             self.list_traffic_events.append(onsidewalk_event)
+
 
         # Register the outside of a lane event
         if not self._outside_lane_active and self._wrong_outside_lane_distance > 0:
@@ -1665,6 +1668,7 @@ class RouteCompletionTest(Criterion):
                         / float(self._accum_meters[-1])
 
                     self._percentage_route_completed_list.append(self._percentage_route_completed)
+                    CarlaDataProvider.set_route_completion_list(self._percentage_route_completed_list)
                     self._traffic_event.set_dict({
                         'route_completed': self._percentage_route_completed,
                         'route_completed_list': self._percentage_route_completed_list})
@@ -1829,6 +1833,7 @@ class RunningRedLightTest(Criterion):
                             'z': location.z})
 
                         self.list_traffic_events.append(red_light_event)
+                        CarlaDataProvider.get_infraction_list().append(red_light_event)
                         self._last_red_light_id = traffic_light.id
                         break
 
@@ -2050,6 +2055,8 @@ class RunningStopTest(Criterion):
                         'z': stop_location.z})
 
                     self.list_traffic_events.append(running_stop_event)
+                    CarlaDataProvider.get_infraction_list().append(running_stop_event)
+
 
                 # reset state
                 self._target_stop_sign = None
