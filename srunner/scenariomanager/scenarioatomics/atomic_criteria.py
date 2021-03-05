@@ -1667,8 +1667,6 @@ class RouteCompletionTest(Criterion):
                     self._percentage_route_completed = 100.0 * float(self._accum_meters[self._current_index]) \
                         / float(self._accum_meters[-1])
 
-                    self._percentage_route_completed_list.append(self._percentage_route_completed)
-                    CarlaDataProvider.set_route_completion_list(self._percentage_route_completed_list)
                     self._traffic_event.set_dict({
                         'route_completed': self._percentage_route_completed,
                         'route_completed_list': self._percentage_route_completed_list})
@@ -1676,6 +1674,8 @@ class RouteCompletionTest(Criterion):
                         "Agent has completed > {:.2f}% of the route".format(
                             self._percentage_route_completed))
 
+            self._percentage_route_completed_list.append(self._percentage_route_completed)
+            CarlaDataProvider.set_route_completion_list(self._percentage_route_completed_list)
             if self._percentage_route_completed > 99.0 and location.distance(self.target) < self.DISTANCE_THRESHOLD:
                 route_completion_event = TrafficEvent(event_type=TrafficEventType.ROUTE_COMPLETED)
                 route_completion_event.set_message("Destination was successfully reached")
